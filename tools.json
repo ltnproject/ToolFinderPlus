@@ -1,0 +1,152 @@
+[
+  {
+    "name": "CapCut",
+    "tags": ["video", "edit", "reel", "clip", "trim", "cut", "footage", "short"],
+    "category": "Video",
+    "link": "https://capcut.com"
+  },
+  {
+    "name": "DaVinci Resolve",
+    "tags": ["video", "edit", "color", "grade", "film", "cut", "footage", "professional"],
+    "category": "Video",
+    "link": "https://blackmagicdesign.com/products/davinciresolve"
+  },
+  {
+    "name": "OBS Studio",
+    "tags": ["stream", "record", "live", "broadcast", "screen", "capture", "twitch", "youtube"],
+    "category": "Video",
+    "link": "https://obsproject.com"
+  },
+  {
+    "name": "Figma",
+    "tags": ["design", "ui", "ux", "prototype", "wireframe", "interface", "graphic", "layout"],
+    "category": "Design",
+    "link": "https://figma.com"
+  },
+  {
+    "name": "Canva",
+    "tags": ["design", "poster", "social", "template", "graphic", "banner", "logo", "flyer"],
+    "category": "Design",
+    "link": "https://canva.com"
+  },
+  {
+    "name": "Adobe Firefly",
+    "tags": ["ai", "image", "generate", "art", "creative", "illustration", "photo"],
+    "category": "AI",
+    "link": "https://firefly.adobe.com"
+  },
+  {
+    "name": "Midjourney",
+    "tags": ["ai", "image", "generate", "art", "illustration", "creative", "prompt"],
+    "category": "AI",
+    "link": "https://midjourney.com"
+  },
+  {
+    "name": "ChatGPT",
+    "tags": ["ai", "chat", "write", "text", "language", "gpt", "assistant", "help"],
+    "category": "AI",
+    "link": "https://chat.openai.com"
+  },
+  {
+    "name": "Claude",
+    "tags": ["ai", "chat", "write", "code", "assistant", "analyze", "text", "help"],
+    "category": "AI",
+    "link": "https://claude.ai"
+  },
+  {
+    "name": "Roblox Studio",
+    "tags": ["game", "create", "build", "3d", "roblox", "develop", "script", "world"],
+    "category": "Game Dev",
+    "link": "https://create.roblox.com"
+  },
+  {
+    "name": "Unity",
+    "tags": ["game", "engine", "3d", "develop", "build", "physics", "render", "mobile"],
+    "category": "Game Dev",
+    "link": "https://unity.com"
+  },
+  {
+    "name": "Godot",
+    "tags": ["game", "engine", "2d", "3d", "develop", "open source", "indie", "build"],
+    "category": "Game Dev",
+    "link": "https://godotengine.org"
+  },
+  {
+    "name": "VS Code",
+    "tags": ["code", "editor", "develop", "program", "ide", "javascript", "python", "write"],
+    "category": "Dev",
+    "link": "https://code.visualstudio.com"
+  },
+  {
+    "name": "GitHub",
+    "tags": ["code", "git", "repo", "version", "collaborate", "host", "push", "deploy"],
+    "category": "Dev",
+    "link": "https://github.com"
+  },
+  {
+    "name": "Vercel",
+    "tags": ["deploy", "host", "frontend", "next", "serverless", "web", "site"],
+    "category": "Dev",
+    "link": "https://vercel.com"
+  },
+  {
+    "name": "Notion",
+    "tags": ["note", "plan", "organize", "write", "wiki", "doc", "database", "task"],
+    "category": "Productivity",
+    "link": "https://notion.so"
+  },
+  {
+    "name": "Obsidian",
+    "tags": ["note", "markdown", "knowledge", "write", "organize", "link", "local"],
+    "category": "Productivity",
+    "link": "https://obsidian.md"
+  },
+  {
+    "name": "Trello",
+    "tags": ["task", "board", "kanban", "plan", "organize", "project", "team", "manage"],
+    "category": "Productivity",
+    "link": "https://trello.com"
+  },
+  {
+    "name": "Blender",
+    "tags": ["3d", "model", "render", "animate", "sculpt", "design", "vfx", "art"],
+    "category": "3D",
+    "link": "https://blender.org"
+  },
+  {
+    "name": "Spline",
+    "tags": ["3d", "web", "design", "interactive", "model", "animate", "browser"],
+    "category": "3D",
+    "link": "https://spline.design"
+  },
+  {
+    "name": "Audacity",
+    "tags": ["audio", "record", "edit", "sound", "music", "podcast", "mix", "wave"],
+    "category": "Audio",
+    "link": "https://audacityteam.org"
+  },
+  {
+    "name": "Spotify for Podcasters",
+    "tags": ["podcast", "audio", "record", "publish", "distribute", "music", "show"],
+    "category": "Audio",
+    "link": "https://podcasters.spotify.com"
+  },
+  {
+    "name": "Framer",
+    "tags": ["design", "prototype", "web", "animate", "interactive", "site", "ui"],
+    "category": "Design",
+    "link": "https://framer.com"
+  },
+  {
+    "name": "Replit",
+    "tags": ["code", "online", "develop", "run", "ide", "python", "javascript", "collaborate"],
+    "category": "Dev",
+    "link": "https://replit.com"
+  },
+  {
+    "name": "ElevenLabs",
+    "tags": ["ai", "voice", "audio", "speech", "clone", "text", "tts", "generate"],
+    "category": "AI",
+    "link": "https://elevenlabs.io"
+  }
+]
