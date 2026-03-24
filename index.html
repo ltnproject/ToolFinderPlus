@@ -5,18 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <meta name="description" content="Tool Finder — Scan any text to discover the right tools. No backend. No login.">
   <meta name="theme-color" content="#080c0a">
-
-  <!-- Open Graph -->
   <meta property="og:title" content="TOOL FINDER">
   <meta property="og:description" content="Scan text → get tool recommendations. Instant. Local. Free.">
   <meta property="og:type" content="website">
-
   <title>TOOL FINDER</title>
-
-  <!-- Tesseract.js OCR — loaded from CDN, no cost -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
-  <!-- Styles -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -31,7 +24,7 @@
 
     <!-- ── HEADER ───────────────────────────────────────────── -->
     <header>
-      <div class="logo-tag">// TOOL FINDER v1.0</div>
+      <div class="logo-tag">// TOOL FINDER v1.1</div>
       <h1>TOOL<br>FINDER</h1>
       <div class="header-sub">SCAN TEXT → GET TOOLS → BUILD FASTER</div>
       <div class="status-bar">
@@ -52,24 +45,23 @@
         <span class="panel-number" id="ocrStatus">OCR LOADING...</span>
       </div>
 
+      <!-- Language selector row -->
+      <div class="lang-row">
+        <label class="lang-label" for="langSelect">🌐 LANGUAGE</label>
+        <select id="langSelect" class="lang-select">
+          <!-- Populated by app.js -->
+        </select>
+      </div>
+
       <div class="camera-wrap" id="cameraWrap">
-        <!-- Live video -->
         <video id="video" autoplay playsinline muted></video>
-
-        <!-- Hidden canvas for frame capture -->
         <canvas id="canvas"></canvas>
-
-        <!-- Scan line beam -->
         <div class="scan-beam" aria-hidden="true"></div>
-
-        <!-- Crosshair overlay -->
         <div class="crosshair" aria-hidden="true"></div>
         <div class="corner-mark tl" aria-hidden="true"></div>
         <div class="corner-mark tr" aria-hidden="true"></div>
         <div class="corner-mark bl" aria-hidden="true"></div>
         <div class="corner-mark br" aria-hidden="true"></div>
-
-        <!-- Placeholder when camera is off -->
         <div class="camera-placeholder" id="cameraPlaceholder">
           <div class="big-icon">📷</div>
           <div>PRESS START CAM</div>
@@ -79,20 +71,14 @@
       <!-- Controls row -->
       <div class="controls">
         <div>
-          <button class="btn btn-secondary" id="startBtn" data-mode="start">
-            START CAM
-          </button>
+          <button class="btn btn-secondary" id="startBtn" data-mode="start">START CAM</button>
         </div>
         <div class="scan-btn-wrap">
-          <button class="btn btn-scan" id="scanBtn" disabled>
-            SCAN
-          </button>
+          <button class="btn btn-scan" id="scanBtn" disabled>SCAN</button>
           <div class="btn-hint">SPACE to scan</div>
         </div>
         <div style="display:flex; justify-content:flex-end;">
-          <button class="btn btn-secondary" id="resetBtn">
-            RESET
-          </button>
+          <button class="btn btn-secondary" id="resetBtn">RESET</button>
         </div>
       </div>
     </div>
@@ -103,9 +89,17 @@
         <span class="icon">📄</span>
         <span>DETECTED TEXT</span>
       </div>
+
       <div class="ocr-output" id="ocrText">
         <div class="ocr-label">detected text</div>
         <div class="ocr-placeholder">Start camera and press SCAN to detect text...</div>
+      </div>
+
+      <!-- Google search button — shown after scan -->
+      <div class="google-btn-wrap">
+        <button class="btn btn-google" id="googleBtn" style="display:none">
+          <span>🔍</span> SEARCH THIS ON GOOGLE
+        </button>
       </div>
 
       <!-- Manual fallback -->
@@ -128,13 +122,7 @@
         <span class="icon">🔧</span>
         <span>MATCHED TOOLS</span>
       </div>
-
-      <!-- Category filter chips -->
-      <div class="filter-row" id="filterRow">
-        <!-- Built dynamically from tools.json categories -->
-      </div>
-
-      <!-- Results list -->
+      <div class="filter-row" id="filterRow"></div>
       <div class="results-wrap" id="results">
         <div class="results-empty">AWAITING SCAN</div>
       </div>
@@ -146,17 +134,14 @@
         <span class="icon">⌨</span>
         <span>SYSTEM LOG</span>
       </div>
-      <div class="log-wrap" id="logWrap">
-        <!-- Log lines injected by app.js -->
-      </div>
+      <div class="log-wrap" id="logWrap"></div>
     </div>
 
-    <!-- ── FOOTER ─────────────────────────────────────────────── -->
     <footer>
-      TOOL FINDER · NO BACKEND · NO LOGIN · NO BS
+      TOOL FINDER · 13 LANGUAGES · NO BACKEND · NO LOGIN
     </footer>
 
-  </div><!-- /.app -->
+  </div>
 
   <script src="app.js"></script>
 </body>
