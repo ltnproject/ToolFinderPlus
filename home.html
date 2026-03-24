@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="D4rkz Tool Finder+ — Point your camera at any text and instantly discover the right tools. 13 languages. No backend. No login.">
+  <meta name="theme-color" content="#04080a">
+  <meta property="og:title" content="D4rkz Tool Finder+">
+  <meta property="og:description" content="Camera → OCR → Tools. Instant. Free. No backend.">
+  <title>D4rkz Tool Finder+</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════════
+   D4RKZ TOOL FINDER+ — LANDING PAGE
+   Aesthetic: Cyberpunk terminal × editorial luxury
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  --black:    #04080a;
+  --bg:       #080e10;
+  --panel:    #0b1518;
+  --card:     #0f1c20;
+  --border:   #122830;
+  --green:    #00ffa3;
+  --green2:   #00d488;
+  --green-dim:#00ffa318;
+  --green-glow: rgba(0,255,163,0.5);
+  --amber:    #f0c040;
+  --red:      #ff4560;
+  --blue:     #38bdf8;
+  --text:     #c8e8dc;
+  --text-mid: #6aab8e;
+  --text-dim: #2e5a46;
+  --orb:      'Orbitron', sans-serif;
+  --mono:     'DM Mono', monospace;
+  --syne:     'Syne', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--text);
+  font-family: var(--mono);
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* ── NOISE TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.6;
+}
+
+/* ── SCAN LINES ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px
+  );
+  pointer-events: none;
+  z-index: 9997;
+}
+
+/* ═══════════════════ NAV ═══════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid transparent;
+  transition: all 0.4s;
+  backdrop-filter: blur(0px);
+}
+
+nav.scrolled {
+  background: rgba(4,8,10,0.92);
+  border-color: var(--border);
+  backdrop-filter: blur(16px);
+}
+
+.nav-logo {
+  font-family: var(--orb);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--green);
+  text-shadow: 0 0 16px var(--green-glow);
+  text-decoration: none;
+}
+
+.nav-logo span { color: var(--text-mid); }
+
+.nav-cta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--green);
+  border: 1px solid var(--green);
+  padding: 8px 20px;
+  border-radius: 3px;
+  text-decoration: none;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.nav-cta::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--green);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s;
+  z-index: -1;
+}
+.nav-cta:hover { color: var(--black); }
+.nav-cta:hover::before { transform: scaleX(1); }
+
+/* ═══════════════════ HERO ═══════════════════ */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 24px 60px;
+  position: relative;
+  text-align: center;
+}
+
+/* Grid background */
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,163,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,163,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 40%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Glow orb */
+.hero-glow {
+  position: absolute;
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(0,255,163,0.08) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -60%);
+  pointer-events: none;
+}
+
+.hero-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: var(--green2);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.2s ease forwards;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hero-tag::before, .hero-tag::after {
+  content: '';
+  width: 40px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--green2));
+}
+.hero-tag::after { transform: scaleX(-1); }
+
+.hero-title {
+  font-family: var(--orb);
+  font-size: clamp(48px, 12vw, 100px);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -2px;
+  margin-bottom: 8px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.35s ease forwards;
+}
+
+.hero-title .d4 {
+  color: var(--text);
+  display: block;
+  font-size: 0.4em;
+  letter-spacing: 8px;
+  color: var(--text-mid);
+  margin-bottom: 4px;
+}
+
+.hero-title .tf {
+  display: block;
+  color: var(--green);
+  text-shadow:
+    0 0 30px rgba(0,255,163,0.7),
+    0 0 80px rgba(0,255,163,0.3),
+    0 0 160px rgba(0,255,163,0.1);
+  animation: flicker 8s 2s ease-in-out infinite;
+}
+
+.hero-title .plus {
+  color: var(--amber);
+  font-size: 0.6em;
+  vertical-align: super;
+  text-shadow: 0 0 20px rgba(240,192,64,0.6);
+}
+
+@keyframes flicker {
+  0%, 95%, 100% { opacity: 1; }
+  96% { opacity: 0.85; }
+  97% { opacity: 1; }
+  98% { opacity: 0.7; }
+  99% { opacity: 1; }
+}
+
+.hero-sub {
+  font-family: var(--mono);
+  font-size: clamp(13px, 2vw, 16px);
+  color: var(--text-mid);
+  letter-spacing: 2px;
+  margin-bottom: 48px;
+  max-width: 520px;
+  line-height: 1.7;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.5s ease forwards;
+}
+
+.hero-sub strong { color: var(--green); font-weight: 400; }
+
+.hero-btns {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.65s ease forwards;
+  margin-bottom: 64px;
+}
+
+.btn-launch {
+  font-family: var(--orb);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--black);
+  background: var(--green);
+  border: none;
+  padding: 18px 40px;
+  border-radius: 3px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 0 40px rgba(0,255,163,0.35), 0 0 80px rgba(0,255,163,0.1);
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.btn-launch::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: translateX(-100%);
+  transition: 0.5s;
+}
+.btn-launch:hover { box-shadow: 0 0 60px rgba(0,255,163,0.5), 0 0 120px rgba(0,255,163,0.2); transform: translateY(-2px); }
+.btn-launch:hover::before { transform: translateX(100%); }
+.btn-launch:active { transform: translateY(0); }
+
+.btn-ghost {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 18px 32px;
+  border-radius: 3px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-ghost:hover { border-color: var(--text-mid); color: var(--text); }
+
+/* Flow indicator */
+.hero-flow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.8s ease forwards;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.flow-step {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.flow-step.active { color: var(--green); border-color: rgba(0,255,163,0.3); background: var(--green-dim); }
+
+.flow-arrow { color: var(--text-dim); font-size: 12px; }
+
+/* ═══════════════════ STATS STRIP ═══════════════════ */
+.stats-strip {
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 32px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 0 20px;
+  border-right: 1px solid var(--border);
+  opacity: 0;
+  animation: fadeIn 0.6s ease forwards;
+}
+.stat-item:last-child { border-right: none; }
+.stat-item:nth-child(1) { animation-delay: 0.1s; }
+.stat-item:nth-child(2) { animation-delay: 0.2s; }
+.stat-item:nth-child(3) { animation-delay: 0.3s; }
+.stat-item:nth-child(4) { animation-delay: 0.4s; }
+
+.stat-num {
+  font-family: var(--orb);
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--green);
+  text-shadow: 0 0 16px var(--green-glow);
+  display: block;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════ HOW IT WORKS ═══════════════════ */
+.section {
+  padding: 100px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-tag {
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: var(--green2);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-tag::before {
+  content: '';
+  width: 32px; height: 1px;
+  background: var(--green2);
+}
+
+.section-title {
+  font-family: var(--syne);
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.section-title em { font-style: normal; color: var(--green); }
+
+.section-desc {
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.8;
+  max-width: 500px;
+  margin-bottom: 56px;
+}
+
+/* Steps */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+
+.step {
+  background: var(--panel);
+  padding: 36px 32px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+.step:hover { background: var(--card); }
+
+.step::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--green), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s;
+}
+.step:hover::before { transform: scaleX(1); }
+
+.step-num {
+  font-family: var(--orb);
+  font-size: 56px;
+  font-weight: 900;
+  color: var(--text-dim);
+  line-height: 1;
+  margin-bottom: 20px;
+  transition: color 0.3s;
+}
+.step:hover .step-num { color: rgba(0,255,163,0.2); }
+
+.step-icon { font-size: 28px; margin-bottom: 14px; display: block; }
+
+.step-title {
+  font-family: var(--syne);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.step-desc {
+  font-size: 13px;
+  color: var(--text-mid);
+  line-height: 1.7;
+}
+
+/* ═══════════════════ FEATURES ═══════════════════ */
+.features-section {
+  padding: 80px 24px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.features-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-top: 48px;
+}
+
+.feat-card {
+  background: var(--panel);
+  padding: 32px 28px;
+  transition: background 0.2s;
+  position: relative;
+}
+.feat-card:hover { background: var(--card); }
+
+.feat-icon {
+  font-size: 24px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.feat-title {
+  font-family: var(--syne);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.feat-desc {
+  font-size: 12px;
+  color: var(--text-mid);
+  line-height: 1.7;
+}
+
+.feat-badge {
+  display: inline-block;
+  font-size: 9px;
+  letter-spacing: 2px;
+  padding: 3px 8px;
+  border-radius: 2px;
+  margin-top: 10px;
+  text-transform: uppercase;
+}
+.feat-badge.green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,255,163,0.2); }
+.feat-badge.amber { background: rgba(240,192,64,0.08); color: var(--amber); border: 1px solid rgba(240,192,64,0.2); }
+.feat-badge.blue  { background: rgba(56,189,248,0.08); color: var(--blue);  border: 1px solid rgba(56,189,248,0.2); }
+
+/* ═══════════════════ LANGUAGE SHOWCASE ═══════════════════ */
+.lang-section {
+  padding: 100px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.lang-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 48px;
+}
+
+.lang-pill {
+  font-size: 13px;
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  color: var(--text-mid);
+  background: var(--panel);
+  transition: all 0.2s;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(10px);
+}
+.lang-pill.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.2s, background 0.2s, color 0.2s;
+}
+.lang-pill:hover {
+  border-color: rgba(0,255,163,0.4);
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+/* ═══════════════════ TERMINAL MOCKUP ═══════════════════ */
+.mockup-section {
+  padding: 80px 24px 100px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+}
+
+.mockup-inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.terminal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(0,255,163,0.05),
+    0 40px 80px rgba(0,0,0,0.6),
+    0 0 100px rgba(0,255,163,0.05);
+  margin-top: 48px;
+}
+
+.terminal-bar {
+  background: var(--panel);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.t-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.t-dot.red    { background: #ff5f57; }
+.t-dot.yellow { background: #febc2e; }
+.t-dot.green  { background: #28c840; }
+
+.terminal-url {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.terminal-body {
+  padding: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  min-height: 360px;
+}
+
+/* Camera mock */
+.cam-mock {
+  background: #000;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+}
+
+.cam-mock-inner {
+  position: absolute; inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Simulated document text */
+.doc-lines {
+  padding: 20px;
+  width: 100%;
+}
+.doc-line {
+  height: 8px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+  margin-bottom: 8px;
+  animation: shimmer 2s ease-in-out infinite;
+}
+.doc-line:nth-child(1) { width: 80%; animation-delay: 0s; }
+.doc-line:nth-child(2) { width: 95%; animation-delay: 0.1s; }
+.doc-line:nth-child(3) { width: 70%; animation-delay: 0.2s; }
+.doc-line:nth-child(4) { width: 60%; animation-delay: 0.3s; }
+.doc-line:nth-child(5) { width: 88%; animation-delay: 0.4s; }
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Scan beam on mockup */
+.mock-beam {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+  box-shadow: 0 0 10px var(--green);
+  animation: mockScan 2.5s ease-in-out infinite;
+  opacity: 0.8;
+}
+@keyframes mockScan {
+  0%   { top: 0; }
+  50%  { top: 100%; }
+  100% { top: 0; }
+}
+
+/* Corner marks on camera mock */
+.mock-corner {
+  position: absolute;
+  width: 14px; height: 14px;
+  border-color: rgba(0,255,163,0.6);
+  border-style: solid;
+}
+.mock-corner.tl { top: 10px; left: 10px; border-width: 2px 0 0 2px; }
+.mock-corner.tr { top: 10px; right: 10px; border-width: 2px 2px 0 0; }
+.mock-corner.bl { bottom: 10px; left: 10px; border-width: 0 0 2px 2px; }
+.mock-corner.br { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; }
+
+/* Right side: results mock */
+.results-mock { display: flex; flex-direction: column; gap: 10px; }
+
+.r-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.r-ocr-text {
+  font-size: 11px;
+  color: var(--amber);
+  line-height: 1.5;
+  padding: 10px 12px;
+  background: rgba(240,192,64,0.05);
+  border: 1px solid rgba(240,192,64,0.15);
+  border-radius: 3px;
+  margin-bottom: 8px;
+}
+
+.r-tool {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  transition: border-color 0.2s;
+}
+.r-tool:hover { border-color: rgba(0,255,163,0.3); }
+
+.r-tool-rank {
+  font-size: 10px;
+  color: var(--green);
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.r-tool-name {
+  font-size: 13px;
+  color: var(--text);
+  flex: 1;
+}
+
+.r-tool-cat {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+}
+
+.r-bar-wrap {
+  width: 40px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.r-bar { height: 100%; background: var(--green); border-radius: 2px; box-shadow: 0 0 4px var(--green); }
+
+/* ═══════════════════ CTA SECTION ═══════════════════ */
+.cta-section {
+  padding: 120px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-glow {
+  position: absolute;
+  width: 800px; height: 400px;
+  background: radial-gradient(ellipse, rgba(0,255,163,0.07) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cta-eyebrow {
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.cta-title {
+  font-family: var(--orb);
+  font-size: clamp(36px, 7vw, 64px);
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+.cta-title span { color: var(--green); text-shadow: 0 0 30px var(--green-glow); }
+
+.cta-sub {
+  font-size: 14px;
+  color: var(--text-mid);
+  margin-bottom: 48px;
+  letter-spacing: 1px;
+}
+
+.cta-url {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  margin-top: 24px;
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.cta-url:hover { color: var(--green); border-color: rgba(0,255,163,0.3); background: var(--green-dim); }
+
+/* ═══════════════════ FOOTER ═══════════════════ */
+footer {
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  padding: 32px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-logo {
+  font-family: var(--orb);
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--green);
+  letter-spacing: 2px;
+}
+.footer-logo span { color: var(--text-mid); }
+
+.footer-meta {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
+.footer-links a {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--green); }
+
+/* ═══════════════════ ANIMATIONS ═══════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ═══════════════════ GLITCH EFFECT ═══════════════════ */
+.glitch {
+  position: relative;
+}
+.glitch::before, .glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+.glitch::before {
+  color: var(--red);
+  clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%);
+  animation: glitch1 6s 3s infinite;
+}
+.glitch::after {
+  color: var(--blue);
+  clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+  animation: glitch2 6s 3.1s infinite;
+}
+@keyframes glitch1 {
+  0%, 94%, 100% { opacity: 0; transform: none; }
+  95% { opacity: 0.8; transform: translateX(-4px); }
+  96% { opacity: 0.8; transform: translateX(4px); }
+  97% { opacity: 0; }
+}
+@keyframes glitch2 {
+  0%, 94%, 100% { opacity: 0; transform: none; }
+  95% { opacity: 0.8; transform: translateX(4px); }
+  96% { opacity: 0.8; transform: translateX(-4px); }
+  97% { opacity: 0; }
+}
+
+/* ═══════════════════ SCROLLBAR ═══════════════════ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--black); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* ═══════════════════ RESPONSIVE ═══════════════════ */
+@media (max-width: 768px) {
+  .stats-strip { grid-template-columns: repeat(2, 1fr); }
+  .stat-item:nth-child(2) { border-right: none; }
+  .steps { grid-template-columns: 1fr; }
+  .features-grid { grid-template-columns: 1fr; }
+  .terminal-body { grid-template-columns: 1fr; }
+  .cam-mock { aspect-ratio: 16/9; }
+  footer { flex-direction: column; align-items: center; text-align: center; }
+  nav { padding: 14px 20px; }
+}
+
+@media (max-width: 480px) {
+  .stats-strip { grid-template-columns: repeat(2, 1fr); padding: 20px 16px; }
+  .hero-btns { flex-direction: column; align-items: center; }
+  .btn-launch, .btn-ghost { width: 100%; max-width: 280px; text-align: center; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══════════════════════════════════════════════════════ -->
+<nav id="nav">
+  <a href="#" class="nav-logo">D4RKZ<span>TF+</span></a>
+  <a href="https://drk.qzz.io/ToolFinderPlus/" class="nav-cta" target="_blank" rel="noopener">
+    LAUNCH APP →
+  </a>
+</nav>
+
+<!-- ══ HERO ══════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="hero-glow" aria-hidden="true"></div>
+
+  <div class="hero-tag">SCAN · MATCH · DISCOVER</div>
+
+  <h1 class="hero-title glitch" data-text="TOOL FINDER+">
+    <span class="d4">D4RKZ</span>
+    <span class="tf">TOOL FINDER<span class="plus">+</span></span>
+  </h1>
+
+  <p class="hero-sub">
+    Point your camera at <strong>any text</strong> — detect it instantly with OCR,
+    match the <strong>right tools</strong> for the job. No servers. No login. No cost.
+  </p>
+
+  <div class="hero-btns">
+    <a href="https://drk.qzz.io/ToolFinderPlus/" class="btn-launch" target="_blank" rel="noopener">
+      ⚡ LAUNCH APP
+    </a>
+    <a href="#how" class="btn-ghost">SEE HOW IT WORKS</a>
+  </div>
+
+  <div class="hero-flow">
+    <div class="flow-step active">📷 Camera</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step active">🔍 OCR</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step active">🧠 Match</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step active">🔧 Tools</div>
+  </div>
+</section>
+
+<!-- ══ STATS STRIP ══════════════════════════════════════════════ -->
+<div class="stats-strip">
+  <div class="stat-item">
+    <span class="stat-num">25+</span>
+    <span class="stat-label">Tools Indexed</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">13</span>
+    <span class="stat-label">Languages</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">0</span>
+    <span class="stat-label">API Calls</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">∞</span>
+    <span class="stat-label">Free Forever</span>
+  </div>
+</div>
+
+<!-- ══ HOW IT WORKS ══════════════════════════════════════════════ -->
+<section class="section" id="how">
+  <div class="section-tag">How it works</div>
+  <h2 class="section-title">Three steps.<br><em>Zero friction.</em></h2>
+  <p class="section-desc">No installation. No account. Open the app, point at text, get results. That's the whole flow.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <span class="step-icon">📷</span>
+      <div class="step-title">Point & Scan</div>
+      <p class="step-desc">Aim your camera at any text — a tutorial, a task description, printed notes. Hit the scan button or press Space.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <span class="step-icon">🔍</span>
+      <div class="step-title">OCR Extraction</div>
+      <p class="step-desc">Tesseract.js reads the text locally in your browser. No image ever leaves your device. Supports 13 languages.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <span class="step-icon">🔧</span>
+      <div class="step-title">Tool Matching</div>
+      <p class="step-desc">Keywords are scored against a curated tool database. Top matches are ranked and linked instantly. Tap to open.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FEATURES ══════════════════════════════════════════════════ -->
+<section class="features-section" id="features">
+  <div class="features-inner">
+    <div class="section-tag">Features</div>
+    <h2 class="section-title">Built to stay <em>out of your way.</em></h2>
+
+    <div class="features-grid">
+      <div class="feat-card">
+        <span class="feat-icon">🌐</span>
+        <div class="feat-title">13 Languages</div>
+        <p class="feat-desc">English, Thai, Japanese, Chinese, Korean, Arabic, Hindi, French, Spanish, Portuguese, Russian, German + more.</p>
+        <span class="feat-badge green">LIVE SWITCHING</span>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🔒</span>
+        <div class="feat-title">Fully Local</div>
+        <p class="feat-desc">OCR runs in your browser with Tesseract.js. No image data is sent to any server. Your camera stays yours.</p>
+        <span class="feat-badge amber">PRIVATE</span>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">⚡</span>
+        <div class="feat-title">No Backend</div>
+        <p class="feat-desc">Pure static HTML, CSS, JS. Hosted on GitHub Pages. Zero server cost. Works offline after first load.</p>
+        <span class="feat-badge blue">STATIC ONLY</span>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🎯</span>
+        <div class="feat-title">Smart Scoring</div>
+        <p class="feat-desc">Results are ranked by keyword match strength — not random. The best fit tool always rises to the top.</p>
+        <span class="feat-badge green">RANKED</span>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">⌨️</span>
+        <div class="feat-title">Manual Fallback</div>
+        <p class="feat-desc">No camera? No problem. Type keywords manually and get the same matching results instantly.</p>
+        <span class="feat-badge amber">ALWAYS WORKS</span>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🔍</span>
+        <div class="feat-title">Google Search</div>
+        <p class="feat-desc">No tool matched? One tap to search the detected text on Google. Nothing gets stuck.</p>
+        <span class="feat-badge blue">FALLBACK</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ LANGUAGES ══════════════════════════════════════════════════ -->
+<section class="lang-section">
+  <div class="section-tag">Language support</div>
+  <h2 class="section-title">Scan text in <em>any language.</em></h2>
+  <p class="section-desc">Switch languages from the dropdown. Tesseract downloads the model on first use and caches it. Works everywhere.</p>
+
+  <div class="lang-grid" id="langGrid">
+    <div class="lang-pill">🇬🇧 English</div>
+    <div class="lang-pill">🇹🇭 Thai</div>
+    <div class="lang-pill">🇨🇳 Chinese (Simplified)</div>
+    <div class="lang-pill">🇹🇼 Chinese (Traditional)</div>
+    <div class="lang-pill">🇯🇵 Japanese</div>
+    <div class="lang-pill">🇰🇷 Korean</div>
+    <div class="lang-pill">🇸🇦 Arabic</div>
+    <div class="lang-pill">🇮🇳 Hindi</div>
+    <div class="lang-pill">🇫🇷 French</div>
+    <div class="lang-pill">🇪🇸 Spanish</div>
+    <div class="lang-pill">🇧🇷 Portuguese</div>
+    <div class="lang-pill">🇷🇺 Russian</div>
+    <div class="lang-pill">🇩🇪 German</div>
+  </div>
+</section>
+
+<!-- ══ TERMINAL MOCKUP ══════════════════════════════════════════ -->
+<section class="mockup-section">
+  <div class="mockup-inner">
+    <div class="section-tag">Interface</div>
+    <h2 class="section-title">Terminal aesthetic.<br><em>Scanner precision.</em></h2>
+
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="t-dot red"></div>
+        <div class="t-dot yellow"></div>
+        <div class="t-dot green"></div>
+        <div class="terminal-url">drk.qzz.io/ToolFinderPlus/</div>
+      </div>
+      <div class="terminal-body">
+
+        <!-- Camera mock -->
+        <div>
+          <div class="r-label">CAMERA FEED</div>
+          <div class="cam-mock">
+            <div class="cam-mock-inner">
+              <div class="doc-lines">
+                <div class="doc-line"></div>
+                <div class="doc-line"></div>
+                <div class="doc-line"></div>
+                <div class="doc-line"></div>
+                <div class="doc-line"></div>
+              </div>
+            </div>
+            <div class="mock-beam"></div>
+            <div class="mock-corner tl"></div>
+            <div class="mock-corner tr"></div>
+            <div class="mock-corner bl"></div>
+            <div class="mock-corner br"></div>
+          </div>
+        </div>
+
+        <!-- Results mock -->
+        <div class="results-mock">
+          <div class="r-label">DETECTED TEXT</div>
+          <div class="r-ocr-text">how to edit video for youtube shorts</div>
+
+          <div class="r-label" style="margin-top:8px;">MATCHED TOOLS</div>
+
+          <div class="r-tool">
+            <span class="r-tool-rank">★</span>
+            <div>
+              <div class="r-tool-name">CapCut</div>
+              <div class="r-tool-cat">VIDEO</div>
+            </div>
+            <div class="r-bar-wrap"><div class="r-bar" style="width:100%"></div></div>
+          </div>
+          <div class="r-tool">
+            <span class="r-tool-rank" style="color:var(--text-dim)">02</span>
+            <div>
+              <div class="r-tool-name">DaVinci Resolve</div>
+              <div class="r-tool-cat">VIDEO</div>
+            </div>
+            <div class="r-bar-wrap"><div class="r-bar" style="width:70%;background:var(--text-mid);box-shadow:none"></div></div>
+          </div>
+          <div class="r-tool">
+            <span class="r-tool-rank" style="color:var(--text-dim)">03</span>
+            <div>
+              <div class="r-tool-name">OBS Studio</div>
+              <div class="r-tool-cat">VIDEO</div>
+            </div>
+            <div class="r-bar-wrap"><div class="r-bar" style="width:45%;background:var(--text-dim);box-shadow:none"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══════════════════════════════════════════════════════ -->
+<section class="cta-section">
+  <div class="cta-glow" aria-hidden="true"></div>
+  <div class="cta-eyebrow">// READY TO USE NOW</div>
+  <h2 class="cta-title">Stop searching.<br><span>Start scanning.</span></h2>
+  <p class="cta-sub">Open on any device. Allow camera. Hit scan.</p>
+  <a href="https://drk.qzz.io/ToolFinderPlus/" class="btn-launch" target="_blank" rel="noopener">
+    ⚡ OPEN TOOL FINDER+
+  </a>
+  <br>
+  <a href="https://drk.qzz.io/ToolFinderPlus/" class="cta-url" target="_blank" rel="noopener">
+    drk.qzz.io/ToolFinderPlus/
+  </a>
+</section>
+
+<!-- ══ FOOTER ══════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-logo">D4RKZ<span>TF+</span></div>
+  <div class="footer-meta">BUILT WITH TESSERACT.JS · HOSTED ON GITHUB PAGES · NO BACKEND</div>
+  <div class="footer-links">
+    <a href="https://drk.qzz.io/ToolFinderPlus/" target="_blank" rel="noopener">APP</a>
+    <a href="https://github.com/ltnproject/ToolFinderPlus" target="_blank" rel="noopener">GITHUB</a>
+  </div>
+</footer>
+
+<script>
+// ── Scroll nav style
+const navEl = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  navEl.classList.toggle('scrolled', window.scrollY > 40);
+}, { passive: true });
+
+// ── Language pills stagger reveal
+const pills = document.querySelectorAll('.lang-pill');
+const pillObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const allPills = document.querySelectorAll('.lang-pill');
+      allPills.forEach((p, i) => {
+        setTimeout(() => p.classList.add('visible'), i * 60);
+      });
+      pillObserver.disconnect();
+    }
+  });
+}, { threshold: 0.2 });
+if (pills.length) pillObserver.observe(pills[0]);
+
+// ── Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+  });
+});
+</script>
+
+</body>
+</html>
