@@ -1,10 +1,28 @@
 /* ══════════════════════════════════════════════════════════════
    TOOL FINDER — app.js
-   Camera → OCR (Tesseract.js) → Match → Display
+   Camera → OCR (Tesseract.js, 13 languages) → Match → Display
+   + Google Search fallback
    No backend. No API. Local only.
    ══════════════════════════════════════════════════════════════ */
 
 'use strict';
+
+// ─── SUPPORTED LANGUAGES ────────────────────────────────────────
+const LANGUAGES = [
+  { code: 'eng',     label: '🇬🇧 English'             },
+  { code: 'tha',     label: '🇹🇭 Thai'                 },
+  { code: 'chi_sim', label: '🇨🇳 Chinese (Simplified)' },
+  { code: 'chi_tra', label: '🇹🇼 Chinese (Traditional)'},
+  { code: 'jpn',     label: '🇯🇵 Japanese'             },
+  { code: 'kor',     label: '🇰🇷 Korean'               },
+  { code: 'ara',     label: '🇸🇦 Arabic'               },
+  { code: 'hin',     label: '🇮🇳 Hindi'                },
+  { code: 'fra',     label: '🇫🇷 French'               },
+  { code: 'spa',     label: '🇪🇸 Spanish'              },
+  { code: 'por',     label: '🇧🇷 Portuguese'           },
+  { code: 'rus',     label: '🇷🇺 Russian'              },
+  { code: 'deu',     label: '🇩🇪 German'               },
+];
 
 // ─── STATE ─────────────────────────────────────────────────────
 const state = {
@@ -14,6 +32,7 @@ const state = {
   ocrReady: false,
   worker: null,
   activeCategory: 'All',
+  activeLang: 'eng',
   lastText: '',
   lastResults: [],
 };
@@ -38,6 +57,8 @@ const DOM = {
   cameraWrap:  () => $('cameraWrap'),
   placeholder: () => $('cameraPlaceholder'),
   ocrStatus:   () => $('ocrStatus'),
+  langSelect:  () => $('langSelect'),
+  googleBtn:   () => $('googleBtn'),
 };
 
 // ─── LOGGING ────────────────────────────────────────────────────
@@ -49,7 +70,6 @@ function log(msg, type = 'info') {
   const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
   line.textContent = `[${ts}] ${msg}`;
   wrap.prepend(line);
-  // Keep max 12 lines
   while (wrap.children.length > 12) wrap.removeChild(wrap.lastChild);
 }
 
@@ -66,16 +86,29 @@ function setStatus(msg, dotClass = '') {
 
 // ─── INIT ───────────────────────────────────────────────────────
 async function init() {
-  log('TOOL FINDER v1.0 — initializing...', 'info');
+  log('TOOL FINDER v1.1 — initializing...', 'info');
   setStatus('LOADING...', 'offline');
-
+  buildLangSelector();
   await loadTools();
   buildFilters();
-  initOCR();
+  await initOCR(state.activeLang);
   bindEvents();
-
   log('system ready', 'ok');
   setStatus('READY');
+}
+
+// ─── BUILD LANGUAGE SELECTOR ─────────────────────────────────────
+function buildLangSelector() {
+  const sel = DOM.langSelect();
+  if (!sel) return;
+  sel.innerHTML = '';
+  LANGUAGES.forEach(lang => {
+    const opt = document.createElement('option');
+    opt.value = lang.code;
+    opt.textContent = lang.label;
+    if (lang.code === state.activeLang) opt.selected = true;
+    sel.appendChild(opt);
+  });
 }
 
 // ─── LOAD TOOLS ─────────────────────────────────────────────────
@@ -87,9 +120,9 @@ async function loadTools() {
   } catch (e) {
     log('tools.json load failed — using fallback', 'warn');
     state.tools = [
-      { name: 'CapCut', tags: ['video', 'edit', 'clip'], category: 'Video', link: 'https://capcut.com' },
-      { name: 'Figma', tags: ['design', 'ui', 'ux'], category: 'Design', link: 'https://figma.com' },
-      { name: 'ChatGPT', tags: ['ai', 'chat', 'write'], category: 'AI', link: 'https://chat.openai.com' },
+      { name: 'CapCut',  tags: ['video','edit','clip'], category: 'Video',  link: 'https://capcut.com' },
+      { name: 'Figma',   tags: ['design','ui','ux'],    category: 'Design', link: 'https://figma.com' },
+      { name: 'ChatGPT', tags: ['ai','chat','write'],   category: 'AI',     link: 'https://chat.openai.com' },
     ];
   }
 }
@@ -116,24 +149,39 @@ function buildFilters() {
 }
 
 // ─── OCR INIT ───────────────────────────────────────────────────
-async function initOCR() {
+async function initOCR(langCode) {
   const status = DOM.ocrStatus();
+  const scanBtn = DOM.scanBtn();
+
+  if (state.worker) {
+    try { await state.worker.terminate(); } catch(_) {}
+    state.worker = null;
+    state.ocrReady = false;
+    if (scanBtn) scanBtn.disabled = true;
+  }
+
+  const langLabel = LANGUAGES.find(l => l.code === langCode)?.label || langCode;
   if (status) status.innerHTML = '<span class="spinner"></span>LOADING OCR...';
-  log('loading Tesseract.js...', 'info');
+  log(`loading OCR engine: ${langLabel}`, 'info');
+  setStatus('LOADING OCR...', 'offline');
+
   try {
-    state.worker = await Tesseract.createWorker('eng', 1, {
+    state.worker = await Tesseract.createWorker(langCode, 1, {
       logger: m => {
         if (m.status === 'recognizing text') {
           const pct = Math.round(m.progress * 100);
           if (status) status.textContent = `RECOGNIZING... ${pct}%`;
         }
+        if (m.status === 'loading tesseract core' || m.status === 'initializing tesseract') {
+          if (status) status.innerHTML = `<span class="spinner"></span>${m.status.toUpperCase()}`;
+        }
       }
     });
     state.ocrReady = true;
-    if (status) status.textContent = 'OCR READY';
-    DOM.scanBtn()?.removeAttribute('disabled');
-    log('OCR engine ready', 'ok');
-    setStatus('OCR READY — START CAMERA');
+    if (status) status.textContent = `OCR READY`;
+    if (state.stream && scanBtn) scanBtn.disabled = false;
+    log(`OCR ready: ${langLabel}`, 'ok');
+    setStatus(`READY · ${langLabel}`);
   } catch (e) {
     log(`OCR init failed: ${e.message}`, 'error');
     if (status) status.textContent = 'OCR FAILED';
@@ -146,11 +194,7 @@ async function startCamera() {
   log('requesting camera access...', 'info');
   try {
     state.stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: 'environment' },
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      }
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
     });
     const video = DOM.video();
     video.srcObject = state.stream;
@@ -159,16 +203,14 @@ async function startCamera() {
     DOM.placeholder().style.display = 'none';
     DOM.startBtn().textContent = 'STOP CAM';
     DOM.startBtn().dataset.mode = 'stop';
-    DOM.scanBtn().disabled = !state.ocrReady;
+    if (state.ocrReady) DOM.scanBtn().disabled = false;
 
     log('camera active', 'ok');
     setStatus('CAMERA LIVE');
   } catch (e) {
     log(`camera error: ${e.message}`, 'error');
     setStatus('CAM DENIED', 'offline');
-
-    const ph = DOM.placeholder();
-    ph.innerHTML = `
+    DOM.placeholder().innerHTML = `
       <div class="big-icon">🚫</div>
       <div>CAMERA ACCESS DENIED</div>
       <div class="camera-error">Allow camera in browser settings</div>
@@ -177,17 +219,11 @@ async function startCamera() {
 }
 
 function stopCamera() {
-  if (state.stream) {
-    state.stream.getTracks().forEach(t => t.stop());
-    state.stream = null;
-  }
+  if (state.stream) { state.stream.getTracks().forEach(t => t.stop()); state.stream = null; }
   const video = DOM.video();
   video.srcObject = null;
   DOM.placeholder().style.display = '';
-  DOM.placeholder().innerHTML = `
-    <div class="big-icon">📷</div>
-    <div>CAMERA OFF</div>
-  `;
+  DOM.placeholder().innerHTML = `<div class="big-icon">📷</div><div>CAMERA OFF</div>`;
   DOM.startBtn().textContent = 'START CAM';
   DOM.startBtn().dataset.mode = 'start';
   DOM.scanBtn().disabled = true;
@@ -202,22 +238,22 @@ function captureFrame() {
   const canvas = DOM.canvas();
   canvas.width  = video.videoWidth  || 640;
   canvas.height = video.videoHeight || 480;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
   return canvas;
 }
 
 // ─── SCAN ───────────────────────────────────────────────────────
 async function runScan() {
-  if (!state.ocrReady || state.isScanning) return;
-  if (!state.stream) { log('no camera feed', 'warn'); return; }
+  if (!state.ocrReady || state.isScanning || !state.stream) {
+    if (!state.stream) log('no camera feed', 'warn');
+    return;
+  }
 
   state.isScanning = true;
   const btn = DOM.scanBtn();
   btn.classList.add('scanning');
   btn.textContent = 'SCANNING...';
   btn.disabled = true;
-
   DOM.cameraWrap().classList.add('scanning');
   setStatus('SCANNING...');
   log('capturing frame...', 'info');
@@ -226,22 +262,22 @@ async function runScan() {
     const canvas = captureFrame();
     log('running OCR...', 'info');
 
-    const status = DOM.ocrStatus();
-    if (status) status.textContent = 'PROCESSING...';
-
     const { data: { text } } = await state.worker.recognize(canvas);
     const cleaned = text.trim().replace(/\n+/g, ' ').replace(/\s+/g, ' ');
 
-    log(`OCR result: "${cleaned.slice(0, 60)}${cleaned.length > 60 ? '...' : ''}"`, cleaned ? 'ok' : 'warn');
+    log(`OCR: "${cleaned.slice(0, 60)}${cleaned.length > 60 ? '...' : ''}"`, cleaned ? 'ok' : 'warn');
 
+    const status = DOM.ocrStatus();
     if (status) status.textContent = 'OCR READY';
 
     if (!cleaned) {
       showOCRResult('', 'No text detected. Try better lighting or hold steady.');
       showNoResults('No text detected in frame.');
+      updateGoogleBtn('');
     } else {
       showOCRResult(cleaned);
       state.lastText = cleaned;
+      updateGoogleBtn(cleaned);
       const results = matchTools(cleaned);
       state.lastResults = results;
       renderResults(results);
@@ -259,6 +295,24 @@ async function runScan() {
   }
 }
 
+// ─── GOOGLE SEARCH BUTTON (in OCR panel) ────────────────────────
+function updateGoogleBtn(text) {
+  const btn = DOM.googleBtn();
+  if (!btn) return;
+  btn.style.display = text ? '' : 'none';
+  btn.onclick = () => openGoogleSearch(text);
+}
+
+function openGoogleSearch(text) {
+  if (!text) return;
+  const q = encodeURIComponent(text.slice(0, 200));
+  window.open(`https://www.google.com/search?q=${q}`, '_blank', 'noopener');
+  log(`google search: "${text.slice(0, 50)}"`, 'info');
+}
+
+// Exposed globally for inline onclick in rendered results
+window.googleSearchText = openGoogleSearch;
+
 // ─── SHOW OCR TEXT ───────────────────────────────────────────────
 function showOCRResult(text, hint = '') {
   const el = DOM.ocrText();
@@ -275,19 +329,18 @@ function showOCRResult(text, hint = '') {
 // ─── MATCH TOOLS ────────────────────────────────────────────────
 function matchTools(text) {
   const words = text.toLowerCase().match(/\b[a-z]{2,}\b/g) || [];
-  const scored = state.tools.map(tool => {
-    let score = 0;
-    const tags = tool.tags.map(t => t.toLowerCase());
-    words.forEach(word => {
-      tags.forEach(tag => {
-        if (tag === word) score += 3;
-        else if (tag.includes(word) || word.includes(tag)) score += 1;
+  return state.tools
+    .map(tool => {
+      let score = 0;
+      const tags = tool.tags.map(t => t.toLowerCase());
+      words.forEach(word => {
+        tags.forEach(tag => {
+          if (tag === word) score += 3;
+          else if (tag.includes(word) || word.includes(tag)) score += 1;
+        });
       });
-    });
-    return { ...tool, score };
-  });
-
-  return scored
+      return { ...tool, score };
+    })
     .filter(t => t.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 8);
@@ -312,6 +365,7 @@ function renderResults(results) {
   }
 
   const maxScore = filtered[0].score || 1;
+  const safeText = JSON.stringify(state.lastText.slice(0, 200));
 
   el.innerHTML = `
     <div class="results-count">
@@ -335,20 +389,31 @@ function renderResults(results) {
         </a>
       `).join('')}
     </div>
+    <div class="google-search-row">
+      <button class="btn btn-google" onclick="googleSearchText(${safeText})">
+        <span>🔍</span> SEARCH ON GOOGLE
+      </button>
+    </div>
   `;
-
   log(`matched ${filtered.length} tools`, 'ok');
 }
 
 function showNoResults(msg = 'No tools matched.') {
   const el = DOM.results();
   if (!el) return;
+  const safeText = state.lastText ? JSON.stringify(state.lastText.slice(0, 200)) : null;
   el.innerHTML = `
     <div class="no-results">
       <div class="no-results-icon">🔍</div>
       <div class="no-results-text">${escapeHtml(msg)}</div>
       <div class="no-results-hint">TRY: VIDEO / DESIGN / CODE / GAME / AI</div>
     </div>
+    ${safeText ? `
+    <div class="google-search-row">
+      <button class="btn btn-google" onclick="googleSearchText(${safeText})">
+        <span>🔍</span> SEARCH ON GOOGLE
+      </button>
+    </div>` : ''}
   `;
 }
 
@@ -360,6 +425,7 @@ function runManualSearch() {
 
   showOCRResult(text);
   state.lastText = text;
+  updateGoogleBtn(text);
   const results = matchTools(text);
   state.lastResults = results;
   renderResults(results);
@@ -372,6 +438,7 @@ function reset() {
   const el = DOM.results();
   if (el) el.innerHTML = `<div class="results-empty">AWAITING SCAN</div>`;
   if (DOM.manualInput()) DOM.manualInput().value = '';
+  updateGoogleBtn('');
   state.lastText = '';
   state.lastResults = [];
   log('reset', 'info');
@@ -379,29 +446,34 @@ function reset() {
 
 // ─── EVENTS ─────────────────────────────────────────────────────
 function bindEvents() {
-  // Camera start/stop
   DOM.startBtn()?.addEventListener('click', () => {
     if (DOM.startBtn().dataset.mode === 'stop') stopCamera();
     else startCamera();
   });
 
-  // Scan
   DOM.scanBtn()?.addEventListener('click', runScan);
-
-  // Reset
   DOM.resetBtn()?.addEventListener('click', reset);
-
-  // Manual search — button
   DOM.manualBtn()?.addEventListener('click', runManualSearch);
 
-  // Manual search — enter key
   DOM.manualInput()?.addEventListener('keydown', e => {
     if (e.key === 'Enter') runManualSearch();
   });
 
-  // Keyboard shortcut: Space = scan
+  // Language switcher — reinit OCR worker
+  DOM.langSelect()?.addEventListener('change', async e => {
+    const newLang = e.target.value;
+    if (newLang === state.activeLang) return;
+    state.activeLang = newLang;
+    const label = LANGUAGES.find(l => l.code === newLang)?.label || newLang;
+    log(`switching to ${label}...`, 'warn');
+    setStatus('SWITCHING LANG...', 'offline');
+    if (state.stream && DOM.scanBtn()) DOM.scanBtn().disabled = true;
+    await initOCR(newLang);
+  });
+
+  // Space = scan
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && !e.target.matches('input')) {
+    if (e.code === 'Space' && !e.target.matches('input, select')) {
       e.preventDefault();
       runScan();
     }
